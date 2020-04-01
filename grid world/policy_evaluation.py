@@ -1,26 +1,43 @@
 from grid import grid
 import numpy as np 
 
+
+
 def policy_eval(pi, grid, actions, rewards,gamma, epsilon):
     n_states = (grid.height * grid.width) - 1
 
     V = np.zeros([grid.height, grid.width])
 
-    for iter in range(10):
+    n_iterations = 0
+    convergence = []
+    
+    while True:
+        n_iterations += 1
+        biggest_change = 0 
+
         for state in grid.all_states:
             grid.set_state(state)
             i,j = grid.current_state
-            for action in actions[state]:
-                grid.take_move(action)
-                r = rewards[grid.current_state]
-                i_prime, j_prime = grid.current_state
+            old_v = V[i,j]
 
-                # Uniform
-                V[i,j] += 1/(len(actions[state])) * (r + (gamma * V[i_prime, j_prime]))
-                grid.set_state((i,j))
+            if state in actions:
+                v = 0
+                p_a = 1.0 / len(actions[state])
+                for action in actions[state]:
+                    grid.take_move(action)
+                    i_prime, j_prime = grid.current_state
+                    r = rewards[i_prime, j_prime]
+                    v += p_a * (r + gamma * V[i_prime,j_prime])
+                    grid.set_state(state)
+                V[i,j] = v
+                biggest_change = max(biggest_change, np.abs(old_v - V[i,j]))
+
+        convergence.append(biggest_change)
+
+        if biggest_change < epsilon:
+            break
     
-    return V
-        
+    return V, n_iterations
 
 actions = {
     (0,0) : ("d", "r"),
@@ -52,6 +69,6 @@ rewards = {
     (2,3) : 0
 }
 
-x = policy_eval(1, grid(4,3,actions, (0,0)), actions, rewards, .3, .3)
+x = policy_eval(1, grid(4,3,actions, (0,0)), actions, rewards, .3, .0001)
 
 print(x)
