@@ -16,9 +16,9 @@ def policy_eval(pi, grid, actions, rewards,gamma, epsilon):
                 i_prime, j_prime = grid.current_state
 
                 # Uniform
-                V[i,j] = 1/(len(actions[state])) * (r + (gamma * V[i_prime, j_prime]))
+                V[i,j] += 1/(len(actions[state])) * (r + (gamma * V[i_prime, j_prime]))
                 grid.set_state((i,j))
-        print(V)
+    
     return V
         
 
