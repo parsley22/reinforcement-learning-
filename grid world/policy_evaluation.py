@@ -4,40 +4,52 @@ import numpy as np
 
 
 def policy_eval(pi, grid, actions, rewards,gamma, epsilon):
-    n_states = (grid.height * grid.width) - 1
+    
+    # Initial random policy
+    pi = np.zeros([grid.height, grid.width])
+    
+    for state in grid.all_states:
+        pi[state] = np.random.choice(len(actions[state]))
 
+    # Initialise empty V
+    
     V = np.zeros([grid.height, grid.width])
 
     n_iterations = 0
     convergence = []
-    
     while True:
-        n_iterations += 1
-        biggest_change = 0 
 
-        for state in grid.all_states:
-            grid.set_state(state)
-            i,j = grid.current_state
-            old_v = V[i,j]
+        while True:
+            n_iterations += 1
+            biggest_change = 0 
 
-            if state in actions:
-                v = 0
-                p_a = 1.0 / len(actions[state])
-                for action in actions[state]:
-                    grid.take_move(action)
-                    i_prime, j_prime = grid.current_state
-                    r = rewards[i_prime, j_prime]
-                    v += p_a * (r + gamma * V[i_prime,j_prime])
-                    grid.set_state(state)
-                V[i,j] = v
-                biggest_change = max(biggest_change, np.abs(old_v - V[i,j]))
+            for state in grid.all_states:
+                grid.set_state(state)
+                i,j = grid.current_state
+                old_v = V[i,j]
 
-        convergence.append(biggest_change)
+                if state in actions:
+                    v = 0
+                    p_a = 1.0 / len(actions[state])
+                        
+                    for action in actions[state]:
+                        grid.take_move(action)
+                        i_prime, j_prime = grid.current_state
+                        r = rewards[i_prime, j_prime]
+                        v += p_a * (r + gamma * V[i_prime,j_prime])
+                        grid.set_state(state)
+                    V[i,j] = v
+                    biggest_change = max(biggest_change, np.abs(old_v - V[i,j]))
 
-        if biggest_change < epsilon:
-            break
+            convergence.append(biggest_change)
+
+            if biggest_change < epsilon:
+                break
     
-    return V, n_iterations
+        for state in grid.all_states:
+            old_a = pi[state]
+            pi[state] = 
+
 
 actions = {
     (0,0) : ("d", "r"),
